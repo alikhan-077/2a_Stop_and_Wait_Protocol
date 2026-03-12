@@ -9,39 +9,60 @@ To write a python program to perform stop and wait protocol
 5. If your frames reach the server it will send ACK signal to client
 6. Stop the Program
 ## PROGRAM
-### CLIENT
+server.py
 ```
-import socket 
-s=socket.socket() 
-s.bind(('localhost',8000)) 
-s.listen(5) 
-c,addr=s.accept() 
+import socket
+
+server = socket.socket()
+server.bind(('localhost', 8000))
+server.listen(1)
+print("Server is listening...")
+conn, addr = server.accept()
+print(f"Connected with {addr}")
+
 while True:
-    i=input("Enter a data: ")
-    c.send(i.encode())
-    ack=c.recv(1024).decode()
-    if ack:
-        print(ack)
-        continue
-    else:
-        c.close()
-        break 
+    data = conn.recv(1024).decode()
+
+    if data:
+        print(f"Received: {data}")
+        conn.send("ACK".encode())
+
+        if data.lower() == 'exit':  
+            print("Connection closed by client")
+            conn.close()
+            break
+```
+client.py
 ```
 
-### SERVER
-```
+import socket
+import time
 
-import socket 
-s=socket.socket() 
-s.connect(('localhost',8000)) 
+client = socket.socket()
+client.connect(('localhost', 8000))
+client.settimeout(5)  
+
 while True:
-    print(s.recv(1024).decode())
-    s.send("Acknowledgement Recived".encode()) 
+    msg = input("Enter a message (or type 'exit' to quit): ")
+
+    client.send(msg.encode())  
+
+    if msg.lower() == 'exit':  
+        print("Connection closed by client")
+        client.close()
+        break
+
+    try:
+        ack = client.recv(1024).decode()
+        if ack == "ACK":
+            print(f"Server acknowledged: {ack}")
+    except socket.timeout:
+        print("No ACK received, retransmitting...")
+        continue  
 ```
 ## OUTPUT
-
-<img width="1918" height="1135" alt="Screenshot 2026-03-10 153609" src="https://github.com/user-attachments/assets/b2ccce97-cd6f-4b30-bf57-beadf4847887" />
-
+<img width="692" height="162" alt="image" src="https://github.com/user-attachments/assets/07f3d075-f042-419e-8e5e-d6b91f142195" />
+<img width="660" height="159" alt="image" src="https://github.com/user-attachments/assets/b7aebcfb-a1c9-46ae-a5ea-bcc4fd7f1605" />
 
 ## RESULT
 Thus, python program to perform stop and wait protocol was successfully executed.
